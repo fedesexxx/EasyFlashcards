@@ -208,6 +208,22 @@ a { color: var(--muted); }
   .deck-grid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 1rem; }
 }
 
+/* Selección de varios mazos */
+.deck-tile.is-selectable { cursor: pointer; }
+.deck-tile.is-selectable.is-disabled { opacity: .45; cursor: not-allowed; }
+.deck-tile.is-picked { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.deck-pick { position: absolute; inset: 0; z-index: 2; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: transparent; cursor: inherit; }
+.deck-pick:focus-visible { outline: 3px solid var(--focus); outline-offset: -3px; }
+.deck-check { position: absolute; top: .7rem; right: .7rem; width: 1.5rem; height: 1.5rem; border: 2px solid rgba(255,255,255,.85); border-radius: 50%; background: rgba(12,16,43,.25); transition: background .15s, border-color .15s; }
+.deck-check::after { content: ""; position: absolute; left: 50%; top: 46%; width: .35rem; height: .7rem; border: solid var(--bg-deep); border-width: 0 2px 2px 0; transform: translate(-50%, -50%) rotate(45deg) scale(0); transition: transform .15s ease; }
+.is-picked .deck-check { background: var(--ink); border-color: var(--ink); }
+.is-picked .deck-check::after { transform: translate(-50%, -50%) rotate(45deg) scale(1); }
+.deck-tile.is-selectable .deck-banner { padding-right: 2.8rem; }
+.select-bar { margin-top: 1.25rem; }
+.select-bar-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .6rem; }
+.select-count { font-weight: 600; font-size: .95rem; }
+.select-count span { color: var(--muted); font-weight: 400; }
+
 /* Pantalla de mazo */
 .mastery-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: .6rem; }
 .mastery-pct { font-size: 1.75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -239,6 +255,7 @@ textarea { min-height: 5rem; line-height: 1.5; resize: vertical; }
 input:focus, textarea:focus { border-color: var(--focus); }
 [aria-invalid="true"] { border-color: var(--danger-solid); }
 .form-error { margin-bottom: 1rem; color: var(--danger); font-weight: 600; }
+.seed-text { min-height: 9rem; word-break: break-all; }
 .bulk-text { min-height: 14rem; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9rem; line-height: 1.6; }
 .bulk-summary { font-weight: 600; font-size: .92rem; }
 .bulk-errors { margin: .4rem 0 0; padding-left: 1.25rem; color: var(--danger); font-size: .88rem; }
@@ -252,7 +269,8 @@ input:focus, textarea:focus { border-color: var(--focus); }
 .edit-title { display: flex; align-items: center; gap: .5rem; min-width: 0; }
 .drag-handle { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; padding: 0; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); color: var(--muted); font-size: 1.15rem; line-height: 1; cursor: grab; touch-action: none; user-select: none; }
 .drag-handle:active { cursor: grabbing; }
-.edit-row.dragging { opacity: .75; border-color: var(--focus); box-shadow: 0 8px 24px rgba(7,11,35,.5); position: relative; z-index: 2; }
+.edit-row { transition: box-shadow .2s ease, border-color .2s ease, opacity .2s ease; }
+.edit-row.dragging { opacity: .85; border-color: var(--focus); box-shadow: 0 10px 28px rgba(7,11,35,.55); position: relative; z-index: 2; }
 body.is-dragging { user-select: none; cursor: grabbing; }
 .edit-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
 .edit-fields .field { margin-bottom: 0; }
@@ -333,6 +351,7 @@ body.is-dragging { user-select: none; cursor: grabbing; }
   font-size: clamp(1.25rem, 1rem + 1.4vw, 2rem); line-height: 1.4;
 }
 @media (prefers-reduced-motion: reduce) {
+  .edit-row, .deck-check, .deck-check::after { transition: none; }
   .flip-inner { transition-duration: .01s; }
   .scene { animation: none; }
   .progress > span { transition: none; }
@@ -407,6 +426,26 @@ dialog p { color: var(--muted); }
   .dialog-actions .btn { flex: 1 1 auto; }
   .face-body { padding: 3rem 1rem; }
 }
+
+/* Deshacer, repetición espaciada y copia de seguridad */
+.study-tools { display: flex; justify-content: center; margin-top: .5rem; }
+#settings-dialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+.settings-section { margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--line-soft); }
+.switch-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; cursor: pointer; }
+.switch-row > span { display: flex; flex-direction: column; gap: .3rem; }
+.switch-row input[type=checkbox] {
+  appearance: none; -webkit-appearance: none; flex: none; position: relative;
+  width: 46px; height: 26px; min-height: 0; margin: .1rem 0 0; padding: 0;
+  border: 0; border-radius: var(--r-pill); background: var(--line); cursor: pointer;
+  transition: background-color .15s;
+}
+.switch-row input[type=checkbox]::after {
+  content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px;
+  border-radius: 50%; background: #fff; transition: transform .15s;
+}
+.switch-row input[type=checkbox]:checked { background: var(--r4); }
+.switch-row input[type=checkbox]:checked::after { transform: translateX(20px); }
+.switch-row input[type=checkbox]:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 </style>
 </head>
 <body>
@@ -423,6 +462,7 @@ dialog p { color: var(--muted); }
 <footer class="site-footer">Hecho con amor por <a href="https://github.com/fedesexxx" target="_blank" rel="noopener noreferrer">Fede</a></footer>
 
 <input type="file" id="import-file" accept=".json,.txt,application/json,text/plain" hidden>
+<input type="file" id="restore-file" accept=".json,application/json" hidden>
 
 <!-- Confirmación -->
 <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-message">
@@ -439,10 +479,25 @@ dialog p { color: var(--muted); }
 <!-- Exportar -->
 <dialog id="export-dialog" aria-labelledby="export-title">
   <form method="dialog">
-    <h2 id="export-title">Exportar mazo</h2>
-    <p class="small" style="margin-bottom:1rem">Elige el formato del archivo:</p>
-    <div class="format-list" id="format-list"></div>
-    <div class="dialog-actions"><button class="btn" value="cancel">Cerrar</button></div>
+    <div id="export-menu">
+      <h2 id="export-title">Exportar mazo</h2>
+      <p class="small" style="margin-bottom:1rem">Elige cómo quieres exportarlo:</p>
+      <div class="format-list" id="format-list"></div>
+    </div>
+    <div id="seed-pane" hidden>
+      <h2 id="seed-title"></h2>
+      <p class="small" id="seed-hint" style="margin-bottom:1rem"></p>
+      <div class="field" style="margin-bottom:.5rem">
+        <label for="seed-text" class="sr-only">Semilla</label>
+        <textarea id="seed-text" class="bulk-text seed-text" readonly spellcheck="false"></textarea>
+      </div>
+      <p id="seed-meta" class="small"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn" data-action="seed-back">← Volver</button>
+        <button type="button" class="btn btn-primary" data-action="seed-copy">Copiar semilla</button>
+      </div>
+    </div>
+    <div class="dialog-actions" id="export-close"><button class="btn" value="cancel">Cerrar</button></div>
   </form>
 </dialog>
 
@@ -486,6 +541,22 @@ dialog p { color: var(--muted); }
         </div>
       </div>
     </div>
+    <section class="settings-section">
+      <label class="switch-row" for="settings-spaced">
+        <span><strong>Repetición espaciada</strong>
+          <span class="small muted">Cada tarjeta vuelve cuando toca: con 1 regresa mañana, con 2 en 3 días, con 3 en 1 semana y con 4 en 2 semanas (si la vuelves a dominar, el plazo se duplica). Al estudiar solo ves lo que toca hoy y hasta 10 tarjetas nuevas.</span></span>
+        <input type="checkbox" id="settings-spaced" role="switch">
+      </label>
+    </section>
+    <section class="settings-section">
+      <h3>Copia de seguridad</h3>
+      <p class="small muted" style="margin:.3rem 0 .75rem">Todos tus mazos y tu progreso en un solo archivo. Restaurar reemplaza lo que tienes ahora.</p>
+      <div class="actions">
+        <button type="button" class="btn btn-sm" data-action="backup-all">Respaldar todo</button>
+        <button type="button" class="btn btn-sm" data-action="restore-pick">Restaurar copia</button>
+      </div>
+      <p class="small muted" id="backup-info" style="margin-top:.6rem"></p>
+    </section>
     <div class="dialog-actions">
       <button type="button" class="btn btn-ghost" data-action="settings-reset">Restablecer</button>
       <button class="btn" value="cancel">Cancelar</button>
@@ -529,6 +600,16 @@ const Util = {
   esc: (s) => String(s ?? '').replace(/[&<>"']/g, ch => (
     { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
   )),
+  b64enc(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = '';
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  },
+  b64dec(b64) {
+    const bin = atob(b64.replace(/\s+/g, ''));
+    return new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(bin, ch => ch.charCodeAt(0)));
+  },
   isObj: (v) => v !== null && typeof v === 'object' && !Array.isArray(v),
   clean: (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : ''),
   fold: (s) => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(),
@@ -546,14 +627,14 @@ const esc = Util.esc;
      version: 1,
      decks: [{
        id, name, description, createdAt, lastStudied,
-       cards: [{ id, front, back, createdAt, rating (0-4), seen, lastReviewed }]
+       cards: [{ id, front, back, createdAt, rating (0-4), seen, lastReviewed, due, interval }]
      }]
    }
    rating: 0 = sin calificar; 1 a 4 = última calificación dada.
    ========================================================= */
 const Model = {
   newCard: (front, back) => ({
-    id: Util.uid(), front, back, createdAt: Date.now(), rating: 0, seen: 0, lastReviewed: null
+    id: Util.uid(), front, back, createdAt: Date.now(), rating: 0, seen: 0, lastReviewed: null, due: null, interval: 0
   }),
 
   newDeck: (name, description = '') => ({
@@ -595,7 +676,9 @@ const Model = {
           createdAt: ts(c.createdAt) || Date.now(),
           rating: num(c.rating, 0, 4),
           seen: num(c.seen, 0, 1e9),
-          lastReviewed: ts(c.lastReviewed)
+          lastReviewed: ts(c.lastReviewed),
+          due: ts(c.due),
+          interval: num(c.interval, 0, 3650)
         });
       });
       state.decks.push(deck);
@@ -677,6 +760,10 @@ const Stats = {
       percent: total ? Math.round(sum / (total * 4) * 100) : 0
     };
   },
+  /* Estadísticas combinadas de varios mazos (mismo formato que Stats.deck) */
+  decks(list) {
+    return Stats.deck({ cards: Study.pool(list) });
+  },
   global() {
     let cards = 0;
     Store.state.decks.forEach(d => { cards += d.cards.length; });
@@ -707,7 +794,7 @@ const Decks = {
   },
   remove(id) {
     Store.state.decks = Store.state.decks.filter(d => d.id !== id);
-    if (Study.session && Study.session.deckId === id) Study.session = null;
+    if (Study.session && Study.session.deckIds.includes(id)) Study.session = null;
     Store.save();
   }
 };
@@ -756,12 +843,77 @@ const Cards = {
    Se estudia primero lo no calificado y lo que menos se domina.
    Una tarjeta calificada con 1 vuelve a salir una vez más.
    ========================================================= */
+/* =========================================================
+   REPETICIÓN ESPACIADA (opcional: se activa en Ajustes)
+   Cada calificación programa cuándo vuelve la tarjeta (due).
+   Se calcula siempre, así el progreso queda listo si activas la función después.
+   ========================================================= */
+const Spaced = {
+  BASE: { 1: 1, 2: 3, 3: 7, 4: 14 },   // días hasta el próximo repaso
+  MAX_DAYS: 90,
+  NEW_PER_SESSION: 10,
+
+  on: () => Theme.spaced === true,
+
+  /* Medianoche de dentro de "days" días (hora local) */
+  dueFrom(ts, days) {
+    const d = new Date(ts);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() + days);
+    return d.getTime();
+  },
+
+  /* Si ya dominabas la tarjeta (3 o 4) y la vuelves a dominar, el plazo se duplica */
+  nextInterval(card, rating) {
+    const base = Spaced.BASE[rating];
+    if (rating >= 3 && card.rating >= 3 && card.interval > 0) {
+      return Math.min(Spaced.MAX_DAYS, Math.max(base, card.interval * 2));
+    }
+    return base;
+  },
+
+  schedule(card, rating, now) {
+    card.interval = Spaced.nextInterval(card, rating);
+    card.due = Spaced.dueFrom(now, card.interval);
+  },
+
+  /* Cuándo toca la tarjeta: null si aún no se ha calificado (es nueva) */
+  dueOf(card) {
+    if (!card.rating) return null;
+    if (Number.isFinite(card.due)) return card.due;
+    return Spaced.dueFrom(card.lastReviewed || 0, Spaced.BASE[card.rating]);   // calificada antes de existir esta función
+  },
+
+  isDue(card, now) {
+    const d = Spaced.dueOf(card);
+    return d !== null && d <= now;
+  },
+
+  pick(cards, now) {
+    const due = cards.filter(c => Spaced.isDue(c, now)).sort((a, b) => Spaced.dueOf(a) - Spaced.dueOf(b));
+    const fresh = cards.filter(c => !c.rating).slice(0, Spaced.NEW_PER_SESSION);
+    return due.concat(fresh);
+  },
+
+  todayText(decks) {
+    const all = decks.reduce((acc, d) => acc.concat(d.cards), []);
+    const now = Date.now();
+    const due = all.filter(c => Spaced.isDue(c, now)).length;
+    const fresh = all.filter(c => !c.rating).length;
+    const parts = [];
+    if (due) parts.push(Util.plural(due, 'tarjeta por repasar', 'tarjetas por repasar'));
+    if (fresh) parts.push(Util.plural(fresh, 'nueva', 'nuevas'));
+    return parts.length ? 'Hoy: ' + parts.join(' y ') + '.' : 'Hoy no te toca repasar nada.';
+  }
+};
+
 const Study = {
   session: null,   // solo en memoria: el progreso real ya queda guardado en las tarjetas
 
-  buildQueue(deck, onlyHard) {
+  buildQueue(deck, onlyHard, explicit) {
     let cards = deck.cards.slice();
     if (onlyHard) cards = cards.filter(c => c.rating === 1 || c.rating === 2);
+    else if (Spaced.on() && !explicit) return Spaced.pick(cards, Date.now()).map(c => c.id);
     return cards
       .map(c => ({ id: c.id, k: c.rating + Math.random() * 0.99 }))   // menor calificación primero, desempate al azar
       .sort((a, b) => a.k - b.k)
@@ -772,25 +924,77 @@ const Study = {
     const deck = Decks.get(deckId);
     if (!deck) return { ok: false, message: 'No se encontró el mazo.' };
     if (!deck.cards.length) return { ok: false, message: 'Este mazo no tiene tarjetas. Añade algunas para poder estudiar.' };
-    let queue = Study.buildQueue(deck, onlyHard);
+    let queue = Study.buildQueue(deck, onlyHard, !!ids);
     if (ids) { const keep = new Set(ids); queue = queue.filter(id => keep.has(id)); }
-    if (!queue.length) return { ok: false, message: 'No hay tarjetas para repasar.' };
+    if (!queue.length) return { ok: false, message: Study.emptyMessage(onlyHard) };
     Study.session = {
-      deckId, onlyHard: !!onlyHard, queue, index: 0,
-      counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, latest: {}, retried: []
+      deckId, deckIds: [deckId], multi: false, onlyHard: !!onlyHard, queue, index: 0,
+      counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, latest: {}, retried: [], history: []
     };
     return { ok: true };
+  },
+
+  /* Junta las tarjetas de varios mazos sin repetir: ni por id ni por el mismo texto (pregunta y respuesta) */
+  pool(decks) {
+    const ids = new Set(), texts = new Set(), out = [];
+    decks.forEach(d => d.cards.forEach(c => {
+      const text = Editor.flat(c.front) + '\u0001' + Editor.flat(c.back);
+      if (ids.has(c.id) || texts.has(text)) return;
+      ids.add(c.id); texts.add(text);
+      out.push(c);
+    }));
+    return out;
+  },
+
+  /* Estudiar varios mazos a la vez: una sola cola con las tarjetas de todos */
+  startMulti(deckIds, onlyHard, ids) {
+    const decks = deckIds.map(Decks.get).filter(Boolean);
+    if (!decks.length) return { ok: false, message: 'No se encontraron los mazos.' };
+    const raw = decks.reduce((n, d) => n + d.cards.length, 0);
+    const pool = { cards: Study.pool(decks) };
+    if (!pool.cards.length) return { ok: false, message: 'Los mazos seleccionados no tienen tarjetas.' };
+    let queue = Study.buildQueue(pool, onlyHard, !!ids);
+    if (ids) { const keep = new Set(ids); queue = queue.filter(id => keep.has(id)); }
+    if (!queue.length) return { ok: false, message: Study.emptyMessage(onlyHard) };
+    Study.session = {
+      deckId: null, deckIds: decks.map(d => d.id), multi: true, onlyHard: !!onlyHard, queue, index: 0,
+      counts: { 1: 0, 2: 0, 3: 0, 4: 0 }, latest: {}, retried: [], history: []
+    };
+    return { ok: true, skipped: raw - pool.cards.length };
+  },
+
+  /* Busca una tarjeta de la sesión y el mazo al que pertenece */
+  locate(s, id) {
+    for (const deckId of s.deckIds) {
+      const deck = Decks.get(deckId);
+      const card = Cards.find(deck, id);
+      if (card) return { deck, card };
+    }
+    return null;
+  },
+
+  emptyMessage(onlyHard) {
+    return !onlyHard && Spaced.on()
+      ? 'Hoy no toca repasar nada aquí. Vuelve mañana, o desactiva la repetición espaciada en Ajustes.'
+      : 'No hay tarjetas para repasar.';
   },
 
   rate(rating) {
     const s = Study.session;
     if (!s || s.index >= s.queue.length) return;
-    const deck = Decks.get(s.deckId);
-    if (!deck) return;
     const id = s.queue[s.index];
-    const card = Cards.find(deck, id);
+    const hit = Study.locate(s, id);
+    const card = hit && hit.card;
+    const deck = hit && hit.deck;
     const now = Date.now();
     if (card) {
+      // Se guarda el estado anterior para poder deshacer esta calificación
+      const undo = {
+        id, index: s.index, rating, deckId: deck.id, retryPos: -1,
+        prev: { rating: card.rating, seen: card.seen, lastReviewed: card.lastReviewed, due: card.due, interval: card.interval },
+        prevLast: deck.lastStudied, prevLatest: s.latest[id]
+      };
+      Spaced.schedule(card, rating, now);   // antes de cambiar card.rating: usa la calificación anterior
       card.rating = rating;
       card.seen += 1;
       card.lastReviewed = now;
@@ -799,11 +1003,39 @@ const Study = {
       s.latest[id] = rating;
       if (rating === 1 && !s.retried.includes(id)) {
         s.retried.push(id);
-        s.queue.splice(Math.min(s.index + 1 + CONFIG.RETRY_GAP, s.queue.length), 0, id);
+        undo.retryPos = Math.min(s.index + 1 + CONFIG.RETRY_GAP, s.queue.length);
+        s.queue.splice(undo.retryPos, 0, id);
       }
+      s.history.push(undo);
     }
     s.index += 1;
     Store.save();
+  },
+
+  canUndo() {
+    const s = Study.session;
+    return !!(s && s.history && s.history.length);
+  },
+
+  /* Deshace la última calificación: restaura la tarjeta, la cola y los contadores */
+  undo() {
+    const s = Study.session;
+    if (!s || !s.history || !s.history.length) return false;
+    const u = s.history.pop();
+    const hit = Study.locate(s, u.id);
+    if (hit) {
+      Object.assign(hit.card, u.prev);
+      hit.deck.lastStudied = u.prevLast;
+    }
+    s.counts[u.rating] = Math.max(0, s.counts[u.rating] - 1);
+    if (u.prevLatest === undefined) delete s.latest[u.id]; else s.latest[u.id] = u.prevLatest;
+    if (u.retryPos >= 0) {
+      if (s.queue[u.retryPos] === u.id) s.queue.splice(u.retryPos, 1);
+      s.retried = s.retried.filter(x => x !== u.id);
+    }
+    s.index = u.index;
+    Store.save();
+    return true;
   },
 
   hardIds(s) { return Object.keys(s.latest).filter(id => s.latest[id] <= 2); },
@@ -817,7 +1049,9 @@ const IO = {
   FORMATS: {
     json: { ext: 'json', mime: 'application/json', label: 'JSON (.json)', hint: 'Conserva nombre, descripción y tarjetas. Ideal para respaldar o compartir.' },
     txt:  { ext: 'txt',  mime: 'text/plain',       label: 'Texto (.txt)', hint: 'Una tarjeta por línea: pregunta;respuesta. Se puede volver a importar.' },
-    csv:  { ext: 'csv',  mime: 'text/csv',         label: 'CSV (.csv)',   hint: 'Dos columnas (pregunta, respuesta) para Excel, Google Sheets o Anki.' }
+    csv:  { ext: 'csv',  mime: 'text/csv',         label: 'CSV (.csv)',   hint: 'Dos columnas (pregunta, respuesta) para Excel, Google Sheets o Anki.' },
+    seed: { seed: true, label: 'Semilla (base64)', hint: 'Un texto para copiar y pegar que contiene el mazo. Se importa desde "Importar".' },
+    progress: { seed: true, label: 'Progreso (base64)', hint: 'El mazo con tus calificaciones y repasos, en un texto. Ideal para pasar tu avance a otro dispositivo.' }
   },
 
   build(deck, format) {
@@ -838,6 +1072,94 @@ const IO = {
       description: deck.description,
       cards: deck.cards.map(c => ({ front: c.front, back: c.back }))
     }, null, 2);
+  },
+
+  deckSeed(deck) {
+    return Util.b64enc(JSON.stringify({
+      name: deck.name, description: deck.description,
+      cards: deck.cards.map(c => ({ front: c.front, back: c.back }))
+    }));
+  },
+
+  progressSeed(deck) {
+    return Util.b64enc(JSON.stringify({
+      type: 'progress', version: 1,
+      decks: [{
+        name: deck.name, description: deck.description, lastStudied: deck.lastStudied,
+        cards: deck.cards.map(c => ({ front: c.front, back: c.back, rating: c.rating, seen: c.seen, lastReviewed: c.lastReviewed, due: c.due, interval: c.interval }))
+      }]
+    }));
+  },
+
+  showSeed(id, format) {
+    const deck = Decks.get(id);
+    if (!deck) return;
+    const isProgress = format === 'progress';
+    const seed = isProgress ? IO.progressSeed(deck) : IO.deckSeed(deck);
+    $('#seed-title').textContent = IO.FORMATS[format].label;
+    $('#seed-hint').textContent = isProgress
+      ? 'Copia este texto. Al pegarlo en "Importar", se aplicará tu progreso a este mazo (o se creará si no existe).'
+      : 'Copia este texto y pégalo en "Importar" para crear este mazo en cualquier dispositivo.';
+    $('#seed-meta').textContent = Util.plural(deck.cards.length, 'tarjeta', 'tarjetas') + ' · ' + seed.length.toLocaleString('es') + ' caracteres';
+    const ta = $('#seed-text');
+    ta.value = seed;
+    $('#export-menu').hidden = true;
+    $('#export-close').hidden = true;
+    $('#seed-pane').hidden = false;
+    ta.focus(); ta.select();
+  },
+
+  /* Aplica un progreso: une por nombre de mazo y por texto de tarjeta */
+  applyProgress(data) {
+    const incoming = Model.normalize({ decks: data.decks }).state.decks;
+    if (!incoming.length) return UI.toast('La semilla de progreso no contiene mazos válidos.', 'error');
+    const key = (c) => Editor.flat(c.front) + '\u0001' + Editor.flat(c.back);
+    let created = 0, merged = 0, rated = 0, lastId = null;
+    incoming.forEach(inc => {
+      inc.cards.forEach(c => { c.id = Util.uid(); });
+      const deck = Store.state.decks.find(d => d.name === inc.name);
+      if (!deck) {
+        inc.id = Util.uid();
+        Store.state.decks.push(inc);
+        created++; lastId = inc.id;
+        return;
+      }
+      const pool = new Map();
+      deck.cards.forEach(c => { const k = key(c); if (!pool.has(k)) pool.set(k, []); pool.get(k).push(c); });
+      inc.cards.forEach(c => {
+        const list = pool.get(key(c));
+        const own = list && list.shift();
+        if (own) { own.rating = c.rating; own.seen = c.seen; own.lastReviewed = c.lastReviewed; own.due = c.due; own.interval = c.interval; rated++; }
+        else { deck.cards.push(c); }
+      });
+      deck.lastStudied = Math.max(deck.lastStudied || 0, inc.lastStudied || 0) || null;
+      merged++; lastId = deck.id;
+    });
+    Store.save();
+    const parts = [];
+    if (merged) parts.push(`progreso aplicado a ${Util.plural(merged, 'mazo', 'mazos')} (${Util.plural(rated, 'tarjeta actualizada', 'tarjetas actualizadas')})`);
+    if (created) parts.push(`${Util.plural(created, 'mazo creado', 'mazos creados')} con su progreso`);
+    UI.toast(parts.join('; ').replace(/^./, ch => ch.toUpperCase()) + '.');
+    Router.go(incoming.length === 1 && lastId ? `#/deck/${lastId}` : '#/');
+  },
+
+  importSeed(raw) {
+    const clean = String(raw || '').replace(/\s+/g, '');
+    if (!clean) return UI.toast('Pega primero una semilla en el recuadro.', 'error');
+    let text;
+    try { text = Util.b64dec(clean); }
+    catch { return UI.toast('La semilla no es válida. Revisa que esté completa y sin caracteres de más.', 'error'); }
+    let data = null;
+    try { data = JSON.parse(text); } catch { /* se valida abajo */ }
+    if (!Util.isObj(data)) return UI.toast('La semilla no es válida: no contiene un mazo ni un progreso.', 'error');
+    if (data.type === 'progress') return IO.applyProgress(data);
+    const res = IO.parse(text);
+    if (res.error) return UI.toast(res.error, 'error');
+    Store.state.decks.push(res.deck);
+    Store.save();
+    const extra = res.skipped ? ` Se omitieron ${Util.plural(res.skipped, 'tarjeta incompleta', 'tarjetas incompletas')}.` : '';
+    UI.toast(`Mazo "${res.deck.name}" importado con ${Util.plural(res.deck.cards.length, 'tarjeta', 'tarjetas')}.${extra}`);
+    Router.go(`#/deck/${res.deck.id}`);
   },
 
   exportDeck(id, format = 'json') {
@@ -959,6 +1281,7 @@ const UI = {
   flipped: false,
   revealed: false,
   draft: null,   // borrador del editor de mazo (solo en memoria hasta guardar)
+  select: null,  // modo "elegir varios mazos": { ids: Set } o null
 
   toast(msg, type = 'info') {
     const box = $('#toasts');
@@ -1011,6 +1334,20 @@ const UI = {
     const p = $('.form-error', form);
     if (p) { p.textContent = ''; p.hidden = true; }
     $$('[aria-invalid]', form).forEach(el => el.removeAttribute('aria-invalid'));
+  },
+
+  /* Actualiza el contador y el botón de la barra de selección sin redibujar la pantalla */
+  updateSelection() {
+    const sel = UI.select;
+    const count = $('#select-count'), btn = $('#select-study');
+    if (!sel || !count || !btn) return;
+    const cards = Study.pool(Array.from(sel.ids).map(id => Decks.get(id)).filter(Boolean)).length;
+    const n = sel.ids.size;
+    count.innerHTML = n
+      ? `${Util.plural(n, 'mazo seleccionado', 'mazos seleccionados')} <span>· ${Util.plural(cards, 'tarjeta', 'tarjetas')}</span>`
+      : 'Toca los mazos que quieras estudiar juntos';
+    btn.disabled = !n;
+    btn.textContent = n > 1 ? `Estudiar ${n} mazos` : 'Estudiar';
   },
 
   updateBulkPreview() {
@@ -1109,8 +1446,24 @@ const Views = {
         </div>` };
     }
 
+    const sel = UI.select;
+    if (sel) sel.ids = new Set(Array.from(sel.ids).filter(id => { const d = Decks.get(id); return d && d.cards.length; }));
+    const canSelect = decks.some(d => d.cards.length);
+
     const tiles = decks.map(d => {
       const s = Stats.deck(d);
+      if (sel) {
+        const picked = sel.ids.has(d.id);
+        return `<li class="deck-tile is-selectable${picked ? ' is-picked' : ''}${s.total ? '' : ' is-disabled'}" data-deck="${esc(d.id)}">
+        <div class="deck-banner"><h2 class="deck-name">${esc(d.name)}</h2></div>
+        <div class="deck-info"><div>
+          ${stackBar(s, `Dominio del mazo: ${s.percent}%`)}
+          <p class="deck-meta" style="margin-top:.4rem"><span>${Util.plural(s.total, 'tarjeta', 'tarjetas')}</span><span title="Dominio">${s.percent}%</span></p>
+        </div></div>
+        <span class="deck-check" aria-hidden="true"></span>
+        <button type="button" class="deck-pick" data-action="deck-toggle" data-id="${esc(d.id)}" aria-pressed="${picked}" ${s.total ? '' : 'disabled'} aria-label="${esc(d.name)}${s.total ? '' : ' (sin tarjetas)'}"></button>
+      </li>`;
+      }
       return `<li class="deck-tile">
         <div class="deck-banner">
           <h2 class="deck-name"><a href="#/deck/${esc(d.id)}">${esc(d.name)}</a></h2>
@@ -1132,15 +1485,20 @@ const Views = {
       <section class="hero"><h1>Flashcards hechas sencillas</h1></section>
       <div class="page-head">
         <div><h2>Mis mazos</h2>
-          <p class="lede">${Util.plural(g.decks, 'mazo', 'mazos')} y ${Util.plural(g.cards, 'tarjeta', 'tarjetas')}.</p></div>
+          <p class="lede">${Util.plural(g.decks, 'mazo', 'mazos')} y ${Util.plural(g.cards, 'tarjeta', 'tarjetas')}.${Spaced.on() ? ' ' + Spaced.todayText(decks) : ''}</p></div>
         <div class="actions">
-          <button class="btn" data-action="import">Importar</button>
+          ${canSelect ? `<button class="btn" data-action="select-toggle" aria-pressed="${!!sel}">${sel ? 'Cancelar selección' : 'Elegir varios'}</button>` : ''}
+          ${sel ? '' : '<button class="btn" data-action="import">Importar</button>'}
         </div>
       </div>
       <ul class="deck-grid">
-        <li class="deck-new-cell"><button class="deck-new" data-action="deck-new"><span class="deck-new-plus" aria-hidden="true">+</span>Nuevo mazo</button></li>
+        ${sel ? '' : '<li class="deck-new-cell"><button class="deck-new" data-action="deck-new"><span class="deck-new-plus" aria-hidden="true">+</span>Nuevo mazo</button></li>'}
         ${tiles}
-      </ul>` };
+      </ul>
+      ${sel ? `<div class="savebar select-bar"><div class="select-bar-inner">
+        <p class="select-count" id="select-count" aria-live="polite"></p>
+        <button type="button" class="btn btn-primary" id="select-study" data-action="study-selected" disabled>Estudiar</button>
+      </div></div>` : ''}`, after: () => UI.updateSelection() };
   },
 
   /* ---------- Importar ---------- */
@@ -1175,6 +1533,16 @@ const Views = {
         <p class="muted small" style="margin-top:.75rem">Las líneas vacías se ignoran y las que no tengan pregunta o respuesta se omiten. También sirven las filas pegadas desde Excel o Sheets.</p>
       </section>
 
+      <section class="panel">
+        <h2 style="margin-bottom:.4rem">Opción 3: semilla (base64)</h2>
+        <p class="muted">Pega aquí una semilla de mazo o de progreso que hayas exportado. Si es un progreso, se aplica al mazo que tenga el mismo nombre (o se crea uno nuevo).</p>
+        <div class="field" style="margin:.75rem 0 0">
+          <label for="seed-import" class="sr-only">Semilla</label>
+          <textarea id="seed-import" class="bulk-text seed-text" spellcheck="false" placeholder="Pega la semilla aquí"></textarea>
+        </div>
+        <div class="actions" style="margin-top:.75rem"><button class="btn btn-primary" data-action="import-seed">Importar semilla</button></div>
+      </section>
+
       <div class="actions" style="margin-top:1.25rem">
         <button class="btn btn-primary" data-action="import-pick">Elegir archivo</button>
         <button class="btn" data-action="import-example">Ejemplo .json</button>
@@ -1193,7 +1561,8 @@ const Views = {
       <a class="back" href="#/">← Mis mazos</a>
       <div class="page-head">
         <div><h1>${esc(deck.name)}</h1>
-          <p class="lede">${esc(deck.description || 'Sin descripción.')}</p></div>
+          <p class="lede">${esc(deck.description || 'Sin descripción.')}</p>
+          ${Spaced.on() ? `<p class="lede">${Spaced.todayText([deck])}</p>` : ''}</div>
         <div class="actions">
           <button class="btn btn-primary" data-action="study" data-id="${esc(id)}" ${st.total ? '' : 'disabled'}>Estudiar</button>
           <a class="btn" href="#/deck/${esc(id)}/edit">Editar mazo</a>
@@ -1253,12 +1622,15 @@ const Views = {
   study() {
     const s = Study.session;
     const route = Router.current;
-    if (!s || s.deckId !== route.id) return { redirect: `#/deck/${route.id}` };
-    const deck = Decks.get(s.deckId);
-    if (!deck) { Study.clear(); return { redirect: '#/' }; }
-    if (s.index >= s.queue.length) return Views.summary(deck, s);
+    const valid = s && (s.multi ? route.id == null : s.deckId === route.id);
+    if (!valid) return { redirect: route.id ? `#/deck/${route.id}` : '#/' };
+    if (!s.deckIds.some(id => Decks.get(id))) { Study.clear(); return { redirect: '#/' }; }
+    if (s.index >= s.queue.length) return Views.summary(s);
 
-    const card = Cards.find(deck, s.queue[s.index]);
+    const hit = Study.locate(s, s.queue[s.index]);
+    const card = hit && hit.card;
+    const deck = hit && hit.deck;
+    const studyTitle = s.multi ? Util.plural(s.deckIds.length, 'mazo', 'mazos') + ' juntos' : (Decks.get(s.deckId) || {}).name;
     if (!card) {   // la tarjeta ya no existe: se salta
       s.queue.splice(s.index, 1);
       return Views.study();
@@ -1272,11 +1644,11 @@ const Views = {
     const rates = [1, 2, 3, 4].map(n => `<button class="rate" style="--c:var(--r${n})" data-action="rate" data-rating="${n}" disabled>
         <span class="rate-n">${n}</span><span class="rate-l">${esc(CONFIG.RATINGS[n])}</span></button>`).join('');
 
-    return { title: `Estudiando ${deck.name}`, after: () => { const f = $('#flip-card'); if (f) f.focus({ preventScroll: true }); }, html: `
+    return { title: `Estudiando ${studyTitle}`, after: () => { const f = $('#flip-card'); if (f) f.focus({ preventScroll: true }); }, html: `
       <section class="study" aria-label="Sesión de estudio">
         <div class="study-top">
           <button class="btn btn-ghost btn-sm" data-action="exit-study">← Salir</button>
-          <h1 class="study-deck">${esc(deck.name)}</h1>
+          <h1 class="study-deck">${esc(studyTitle)}</h1>
           <p class="counter"><span class="sr-only">Tarjeta </span>${s.index + 1} / ${total}</p>
         </div>
         <div class="progress" role="progressbar" aria-label="Progreso de la sesión" aria-valuemin="0" aria-valuemax="${total}" aria-valuenow="${s.index}"><span style="width:${pct}%"></span></div>
@@ -1286,7 +1658,7 @@ const Views = {
             <div class="flip" id="flip-card" role="button" tabindex="0" data-action="flip">
               <div class="flip-inner">
                 <div class="face face-front" data-face="front">
-                  <span class="face-label">Pregunta${isRetry ? ' (repetición)' : ''}</span>
+                  <span class="face-label">Pregunta${isRetry ? ' (repetición)' : ''}${s.multi ? ' · ' + esc(deck.name) : ''}</span>
                   <div class="face-body"><span class="face-text">${esc(card.front)}</span></div>
                 </div>
                 <div class="face face-back" data-face="back" aria-hidden="true">
@@ -1301,23 +1673,28 @@ const Views = {
 
         <div class="rates" role="group" aria-label="¿Qué tanto dominas esta tarjeta?">${rates}</div>
         <p class="hint" id="study-hint">Toca la tarjeta o presiona Espacio para ver la respuesta.</p>
+        <div class="study-tools"><button class="btn btn-ghost btn-sm" data-action="undo" ${Study.canUndo() ? '' : 'disabled'} title="Deshacer la última calificación (Retroceso)">Deshacer</button></div>
       </section>` };
   },
 
-  summary(deck, s) {
+  summary(s) {
     const answered = s.counts[1] + s.counts[2] + s.counts[3] + s.counts[4];
     const st = { total: answered, counts: s.counts };
     const hard = Study.hardIds(s).length;
+    const decks = s.deckIds.map(Decks.get).filter(Boolean);
+    const percent = Stats.decks(decks).percent;
+    const idAttr = s.multi ? '' : esc(s.deckId);
     return { title: 'Sesión terminada', after: () => { const h = $('#summary-h'); if (h) h.focus(); }, html: `
       <section class="panel summary" aria-labelledby="summary-h">
         <h1 id="summary-h" tabindex="-1">Sesión terminada</h1>
-        <p class="lede" style="margin-left:auto;margin-right:auto">Calificaste ${Util.plural(answered, 'tarjeta', 'tarjetas')}. El dominio del mazo ahora es ${Stats.deck(deck).percent}%.</p>
+        <p class="lede" style="margin-left:auto;margin-right:auto">Calificaste ${Util.plural(answered, 'tarjeta', 'tarjetas')}. ${s.multi ? 'El dominio de los mazos seleccionados' : 'El dominio del mazo'} ahora es ${percent}%.</p>
         ${stackBar(st, 'Resultado de la sesión')}
         ${legend({ 0: 0, ...s.counts })}
         <div class="actions">
-          <button class="btn btn-primary" data-action="finish" data-id="${esc(deck.id)}">Volver al mazo</button>
-          ${hard ? `<button class="btn" data-action="study-missed" data-id="${esc(deck.id)}">Repasar las ${hard} que me cuestan</button>` : ''}
-          <button class="btn" data-action="study-again" data-id="${esc(deck.id)}">Estudiar de nuevo</button>
+          <button class="btn btn-primary" data-action="finish" data-id="${idAttr}">${s.multi ? 'Volver a Mis mazos' : 'Volver al mazo'}</button>
+          ${hard ? `<button class="btn" data-action="study-missed" data-id="${idAttr}">Repasar las ${hard} que me cuestan</button>` : ''}
+          <button class="btn" data-action="study-again" data-id="${idAttr}">Estudiar de nuevo</button>
+          ${Study.canUndo() ? '<button class="btn btn-ghost" data-action="undo" title="Deshacer la última calificación (Retroceso)">Deshacer la última</button>' : ''}
         </div>
       </section>` };
   }
@@ -1364,6 +1741,22 @@ const Editor = {
       const ta = $('#bulk-text');
       if (ta) { ta.value = d.bulkText; UI.updateBulkPreview(); }
     }
+  },
+
+  /* Animación FLIP: mide las posiciones, aplica el cambio y desliza cada fila desde donde estaba */
+  animateMove(mutate) {
+    const rows = $$('.edit-list .edit-row');
+    const first = new Map(rows.map(r => [r, r.getBoundingClientRect().top]));
+    mutate();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    $$('.edit-list .edit-row').forEach(r => {
+      const dy = first.get(r) - r.getBoundingClientRect().top;
+      if (!dy || !r.animate) return;
+      r.animate(
+        [{ transform: `translateY(${dy}px)` }, { transform: 'translateY(0)' }],
+        { duration: 240, easing: 'cubic-bezier(.2, .8, .2, 1)' }
+      );
+    });
   },
 
   /* Reordenar tarjetas arrastrando (ratón, tacto o teclado) */
@@ -1502,14 +1895,16 @@ const Editor = {
    ========================================================= */
 const Router = {
   current: { name: 'home', id: null },
+  path: '',   // ruta actual en memoria (no depende de que el navegador actualice la URL)
 
   parse() {
     let parts;
-    try { parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent); }
+    try { parts = Router.path.replace(/^#\/?/, '').split('/').filter(Boolean).map(decodeURIComponent); }
     catch { return { name: 'notfound', id: null }; }
     if (!parts.length) return { name: 'home', id: null };
     if (parts[0] === 'new' && parts.length === 1) return { name: 'new', id: null };
     if (parts[0] === 'import' && parts.length === 1) return { name: 'import', id: null };
+    if (parts[0] === 'study' && parts.length === 1) return { name: 'study', id: null };   // varios mazos a la vez
     if (parts[0] === 'deck' && parts[1]) {
       if (parts.length === 2) return { name: 'deck', id: parts[1] };
       if (parts.length === 3 && parts[2] === 'edit') return { name: 'edit', id: parts[1] };
@@ -1531,7 +1926,11 @@ const Router = {
   },
 
   go(hash) {
-    if (location.hash === hash) Router.render('route'); else location.hash = hash;
+    Router.path = hash;
+    if (location.hash !== hash) {
+      try { location.hash = hash; } catch { /* entorno sin acceso a la URL: la ruta en memoria basta */ }
+    }
+    Router.render('route');
   },
 
   /* kind = 'route' (cambio de pantalla) o 'refresh' (mismo lugar, datos nuevos) */
@@ -1540,6 +1939,7 @@ const Router = {
     const route = Router.parse();
     Router.current = route;
     if (route.name !== 'new' && route.name !== 'edit') UI.draft = null;
+    if (route.name !== 'home') UI.select = null;
     if (kind === 'route' && (prev.name !== route.name || prev.id !== route.id)) UI.query = '';
 
     const app = $('#app');
@@ -1548,7 +1948,11 @@ const Router = {
     try { view = Router.resolve(route); }
     catch (err) { console.error(err); view = Views.error(); }
 
-    if (view.redirect) { location.replace(view.redirect); return; }
+    if (view.redirect) {
+      Router.path = view.redirect;
+      try { history.replaceState(null, '', view.redirect); } catch { /* sin acceso a la URL */ }
+      return Router.render('route');
+    }
 
     document.title = view.title ? `${view.title} | EasyFlashcards` : 'EasyFlashcards';
     app.innerHTML = view.html;
@@ -1565,7 +1969,12 @@ const Router = {
   },
 
   start() {
-    window.addEventListener('hashchange', () => Router.render('route'));
+    Router.path = location.hash;
+    window.addEventListener('hashchange', () => {
+      if (location.hash === Router.path) return;   // ya lo mostramos nosotros
+      Router.path = location.hash;
+      Router.render('route');
+    });
     Router.render('route');
   }
 };
@@ -1579,6 +1988,14 @@ function beginStudy(deckId, onlyHard, ids) {
   Router.go(`#/deck/${deckId}/study`);
 }
 
+function beginStudyMulti(deckIds, onlyHard, ids) {
+  if (deckIds.length === 1) return beginStudy(deckIds[0], onlyHard, ids);
+  const r = Study.startMulti(deckIds, onlyHard, ids);
+  if (!r.ok) { UI.toast(r.message); return; }
+  Router.go('#/study');
+  if (r.skipped) UI.toast(`Se omitieron ${Util.plural(r.skipped, 'tarjeta repetida', 'tarjetas repetidas')} entre los mazos.`);
+}
+
 function rateCard(rating) {
   if (!UI.revealed) return;
   Study.rate(rating);
@@ -1590,9 +2007,13 @@ const Actions = {
   'settings-swatch': (el) => Theme.preview(el.dataset.color),
   'settings-reset':  () => Theme.preview(Theme.DEFAULT),
   'settings-save':   () => {
-    if (Theme.valid(Theme.draft)) { Theme.color = Theme.draft; Theme.apply(Theme.color); Theme.save(); }
+    if (Theme.valid(Theme.draft)) { Theme.color = Theme.draft; Theme.apply(Theme.color); }
+    const sp = $('#settings-spaced');
+    if (sp) Theme.spaced = sp.checked;
+    Theme.save();
     $('#settings-dialog').close();
-    UI.toast('Color de los mazos guardado.');
+    UI.toast('Ajustes guardados.');
+    if (Router.current.name !== 'study') Router.render('refresh');   // actualiza el "Hoy:" de las pantallas
   },
   'deck-new':  () => Router.go('#/new'),
   'deck-edit': (el) => Router.go(`#/deck/${el.dataset.id}/edit`),
@@ -1691,9 +2112,31 @@ const Actions = {
     const id = el.dataset.id;
     $('#format-list').innerHTML = Object.entries(IO.FORMATS).map(([k, f]) =>
       `<button type="button" class="format-btn" data-action="export-as" data-id="${esc(id)}" data-format="${k}"><strong>${esc(f.label)}</strong><span>${esc(f.hint)}</span></button>`).join('');
+    $('#export-menu').hidden = false; $('#export-close').hidden = false; $('#seed-pane').hidden = true;
     const dlg = $('#export-dialog'); if (!dlg.open) dlg.showModal();
   },
-  'export-as': (el) => { IO.exportDeck(el.dataset.id, el.dataset.format); $('#export-dialog').close(); },
+  'export-as': (el) => {
+    const f = IO.FORMATS[el.dataset.format];
+    if (f && f.seed) return IO.showSeed(el.dataset.id, el.dataset.format);
+    IO.exportDeck(el.dataset.id, el.dataset.format);
+    $('#export-dialog').close();
+  },
+  'seed-back': () => {
+    $('#seed-pane').hidden = true; $('#export-menu').hidden = false; $('#export-close').hidden = false;
+  },
+  'seed-copy': async (el) => {
+    const ta = $('#seed-text');
+    let ok = false;
+    try { await navigator.clipboard.writeText(ta.value); ok = true; }
+    catch {
+      ta.focus(); ta.select();
+      try { ok = document.execCommand('copy'); } catch { ok = false; }
+    }
+    const label = el.dataset.label || (el.dataset.label = el.textContent);
+    el.textContent = ok ? '¡Copiada!' : 'Pulsa Ctrl+C';
+    setTimeout(() => { el.textContent = label; }, 1800);
+  },
+  'import-seed': () => IO.importSeed(($('#seed-import') || {}).value),
 
   'deck-delete': async (el) => {
     const deck = Decks.get(el.dataset.id);
@@ -1710,12 +2153,31 @@ const Actions = {
     if (Router.current.name === 'deck') Router.go('#/'); else Router.render('refresh');
   },
 
+  'select-toggle': () => {
+    UI.select = UI.select ? null : { ids: new Set() };
+    Router.render('refresh');
+    const b = $('[data-action="select-toggle"]'); if (b) b.focus({ preventScroll: true });
+  },
+  'deck-toggle': (el) => {
+    const sel = UI.select; if (!sel) return;
+    const id = el.dataset.id;
+    const on = !sel.ids.has(id);
+    if (on) sel.ids.add(id); else sel.ids.delete(id);
+    el.setAttribute('aria-pressed', String(on));
+    const tile = el.closest('.deck-tile'); if (tile) tile.classList.toggle('is-picked', on);
+    UI.updateSelection();
+  },
+  'study-selected': () => {
+    const sel = UI.select; if (!sel || !sel.ids.size) return;
+    beginStudyMulti(Array.from(sel.ids), false);
+  },
+
   'study':      (el) => beginStudy(el.dataset.id, false),
   'study-hard': (el) => beginStudy(el.dataset.id, true),
 
   'exit-study': () => {
     const s = Study.session;
-    const id = s ? s.deckId : null;
+    const id = s ? s.deckId : null;   // null si se estudiaban varios mazos
     Study.clear();
     Router.go(id ? `#/deck/${id}` : '#/');
   },
@@ -1738,10 +2200,21 @@ const Actions = {
   },
 
   'rate': (el) => rateCard(Number(el.dataset.rating)),
+  'undo': () => { if (Study.undo()) Router.render('refresh'); },
+  'backup-all': () => Backup.download(),
+  'restore-pick': () => { const f = $('#restore-file'); if (f) f.click(); },
 
-  'finish': (el) => { Study.clear(); Router.go(`#/deck/${el.dataset.id}`); },
-  'study-again': (el) => { const s = Study.session; beginStudy(el.dataset.id, s ? s.onlyHard : false); },
-  'study-missed': (el) => { const s = Study.session; beginStudy(el.dataset.id, false, s ? Study.hardIds(s) : []); }
+  'finish': (el) => { Study.clear(); Router.go(el.dataset.id ? `#/deck/${el.dataset.id}` : '#/'); },
+  'study-again': (el) => {
+    const s = Study.session;
+    if (s && s.multi) return beginStudyMulti(s.deckIds, s.onlyHard);
+    beginStudy(el.dataset.id, s ? s.onlyHard : false);
+  },
+  'study-missed': (el) => {
+    const s = Study.session;
+    if (s && s.multi) return beginStudyMulti(s.deckIds, false, Study.hardIds(s));
+    beginStudy(el.dataset.id, false, s ? Study.hardIds(s) : []);
+  }
 };
 
 const Forms = {
@@ -1751,6 +2224,12 @@ const Forms = {
 
 function bindEvents() {
   document.addEventListener('click', (e) => {
+    // Enlaces internos (#/...): se navegan por código para que funcionen en cualquier entorno
+    const a = e.target.closest && e.target.closest('a[href^="#"]');
+    if (a && !e.defaultPrevented && e.button === 0 && !(e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) && (!a.target || a.target === '_self')) {
+      const h = a.getAttribute('href');
+      if (h === '#' || h.startsWith('#/')) { e.preventDefault(); Router.go(h === '#' ? '#/' : h); return; }
+    }
     const el = e.target.closest('[data-action]');
     if (!el || el.disabled) return;
     const fn = Actions[el.dataset.action];
@@ -1765,10 +2244,16 @@ function bindEvents() {
     if (fn) fn(form, e);
   });
 
+  document.addEventListener('focusin', (e) => {
+    if (e.target.id === 'seed-text') e.target.select();
+  });
+
   document.addEventListener('change', (e) => {
     const t = e.target;
     if (t.id === 'import-file') {
       IO.handleFile(t.files && t.files[0]).finally(() => { t.value = ''; });
+    } else if (t.id === 'restore-file') {
+      Backup.restoreFile(t.files && t.files[0]).finally(() => { t.value = ''; });
     }
   });
 
@@ -1800,12 +2285,21 @@ function bindEvents() {
   });
   document.addEventListener('pointermove', (e) => {
     if (!drag || e.pointerId !== drag.id) return;
-    const over = document.elementFromPoint(e.clientX, e.clientY);
-    const other = over && over.closest && over.closest('.edit-row');
-    if (other && other !== drag.row && other.parentNode === drag.row.parentNode) {
-      const r = other.getBoundingClientRect();
-      if (e.clientY < r.top + r.height / 2) other.parentNode.insertBefore(drag.row, other);
-      else other.parentNode.insertBefore(drag.row, other.nextSibling);
+    // Se usa la posición de layout (sin transformaciones) para que la animación no cause rebotes
+    const list = drag.row.parentNode;
+    const y = e.clientY - list.getBoundingClientRect().top;
+    const rows = Array.from(list.children).filter(n => n.classList.contains('edit-row') && n !== drag.row);
+    const top = (r) => r.offsetTop - list.offsetTop;
+    const other = rows.find(r => y >= top(r) && y < top(r) + r.offsetHeight);
+    if (other) {
+      const before = y < top(other) + other.offsetHeight / 2;
+      const inPlace = before ? drag.row.nextElementSibling === other : drag.row.previousElementSibling === other;
+      if (!inPlace) {
+        Editor.animateMove(() => {
+          if (before) list.insertBefore(drag.row, other);
+          else list.insertBefore(drag.row, other.nextSibling);
+        });
+      }
     }
     if (e.clientY < 70) window.scrollBy(0, -14);
     else if (window.innerHeight - e.clientY < 70) window.scrollBy(0, 14);
@@ -1827,7 +2321,9 @@ function bindEvents() {
     const row = h.closest('.edit-row');
     const sib = e.key === 'ArrowUp' ? row.previousElementSibling : row.nextElementSibling;
     if (!sib) return;
-    if (e.key === 'ArrowUp') row.parentNode.insertBefore(row, sib); else row.parentNode.insertBefore(sib, row);
+    Editor.animateMove(() => {
+      if (e.key === 'ArrowUp') row.parentNode.insertBefore(row, sib); else row.parentNode.insertBefore(sib, row);
+    });
     Editor.commitOrder();
     h.focus();
   });
@@ -1843,6 +2339,7 @@ function bindEvents() {
     const t = e.target;
     if (t.closest && t.closest('input, textarea, select')) return;
     const s = Study.session;
+    if (e.key === 'Backspace' && Study.canUndo()) { e.preventDefault(); if (Study.undo()) Router.render('refresh'); return; }
     if (!s || s.index >= s.queue.length) return;
 
     if (e.key === ' ' || e.key === 'Enter') {
@@ -1885,17 +2382,21 @@ const Theme = {
   DEFAULT: '#2F3240',
   PRESETS: ['#2F3240', '#47507C', '#3A2F4F', '#1F4D45', '#5A2F3A', '#4A3F2A'],
   color: '#2F3240',
+  spaced: false,       // repetición espaciada (opcional)
+  lastBackup: null,    // fecha del último respaldo
   draft: null,
   valid: (c) => typeof c === 'string' && /^#[0-9a-fA-F]{6}$/.test(c),
   load() {
     try {
       const o = JSON.parse(window.localStorage.getItem(Theme.KEY) || 'null');
       if (o && Theme.valid(o.deckColor)) Theme.color = o.deckColor;
+      if (o && o.spaced === true) Theme.spaced = true;
+      if (o && Number.isFinite(o.lastBackup)) Theme.lastBackup = o.lastBackup;
     } catch { /* sin ajustes guardados */ }
     Theme.apply(Theme.color);
   },
   save() {
-    try { window.localStorage.setItem(Theme.KEY, JSON.stringify({ deckColor: Theme.color })); return true; }
+    try { window.localStorage.setItem(Theme.KEY, JSON.stringify({ deckColor: Theme.color, spaced: Theme.spaced, lastBackup: Theme.lastBackup })); return true; }
     catch { return false; }
   },
   ink(c) {
@@ -1918,8 +2419,95 @@ const Theme = {
     $('#swatches').innerHTML = Theme.PRESETS.map(c =>
       `<button type="button" class="swatch" style="--c:${c}" data-action="settings-swatch" data-color="${c}" aria-label="Color ${c}" aria-pressed="false"></button>`).join('');
     Theme.preview(Theme.color);
+    const sp = $('#settings-spaced'); if (sp) sp.checked = Theme.spaced;
+    Backup.refreshInfo();
     const dlg = $('#settings-dialog');
     if (!dlg.open) dlg.showModal();
+  }
+};
+
+/* =========================================================
+   COPIA DE SEGURIDAD: todos los mazos y el progreso en un solo archivo
+   ========================================================= */
+const Backup = {
+  stamp() {
+    const d = new Date(), p = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  },
+
+  build() {
+    return JSON.stringify({
+      app: 'easyflashcards', type: 'backup', version: 1,
+      exportedAt: new Date().toISOString(),
+      settings: { deckColor: Theme.color, spaced: Theme.spaced },
+      decks: Store.state.decks
+    }, null, 2);
+  },
+
+  refreshInfo() {
+    const el = $('#backup-info');
+    if (!el) return;
+    el.textContent = Theme.lastBackup
+      ? 'Último respaldo: ' + new Date(Theme.lastBackup).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' }) + '.'
+      : 'Aún no has hecho ningún respaldo.';
+  },
+
+  download() {
+    if (!Store.state.decks.length) return UI.toast('Todavía no hay mazos que respaldar.', 'error');
+    try {
+      const blob = new Blob([Backup.build()], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `easyflashcards-respaldo-${Backup.stamp()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      Theme.lastBackup = Date.now();
+      Theme.save();
+      Backup.refreshInfo();
+      UI.toast(`Respaldo guardado como ${a.download}.`);
+    } catch (err) {
+      console.error(err);
+      UI.toast('No se pudo crear el respaldo.', 'error');
+    }
+  },
+
+  async restoreFile(file) {
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) return UI.toast('El archivo es demasiado grande para ser una copia de seguridad.', 'error');
+    let data = null;
+    try { data = JSON.parse((await file.text()).replace(/^\uFEFF/, '')); }
+    catch { return UI.toast('No se pudo leer el archivo. ¿Es una copia de seguridad en .json?', 'error'); }
+    if (!Util.isObj(data) || data.type !== 'backup' || !Array.isArray(data.decks)) {
+      return UI.toast('Ese archivo no es una copia de seguridad. Para importar un mazo suelto usa "Importar".', 'error');
+    }
+    const incoming = Model.normalize({ decks: data.decks }).state;
+    if (!incoming.decks.length) return UI.toast('La copia no contiene mazos válidos.', 'error');
+
+    const cards = incoming.decks.reduce((n, d) => n + d.cards.length, 0);
+    const ok = await UI.confirm({
+      title: '¿Restaurar esta copia?',
+      message: `Se reemplazarán tus ${Util.plural(Store.state.decks.length, 'mazo actual', 'mazos actuales')} por ${Util.plural(incoming.decks.length, 'mazo', 'mazos')} (${Util.plural(cards, 'tarjeta', 'tarjetas')}) de la copia. No se puede deshacer. Si dudas, haz antes un respaldo de lo que tienes ahora.`,
+      confirmLabel: 'Reemplazar todo',
+      danger: true
+    });
+    if (!ok) return;
+
+    Study.clear();
+    UI.draft = null;
+    UI.select = null;
+    Store.state = incoming;
+    const st = Util.isObj(data.settings) ? data.settings : {};
+    if (Theme.valid(st.deckColor)) { Theme.color = st.deckColor; Theme.apply(Theme.color); }
+    if (typeof st.spaced === 'boolean') Theme.spaced = st.spaced;
+    Theme.save();
+    Store.save();
+    const dlg = $('#settings-dialog');
+    if (dlg && dlg.open) dlg.close();
+    UI.toast(`Copia restaurada: ${Util.plural(incoming.decks.length, 'mazo', 'mazos')} y ${Util.plural(cards, 'tarjeta', 'tarjetas')}.`);
+    Router.go('#/');
   }
 };
 
