@@ -2,6 +2,8 @@
 
 Simple, open-source, reliable, fast and easy website to study flashcards.
 
+## Live demo
+Try it by yourself 👉 [fedesexxx.github.io/EasyFlashcards](https://fedesexxx.github.io/EasyFlashcards/)
 ## Features
 
 - Create and edit decks with your own questions and answers.
